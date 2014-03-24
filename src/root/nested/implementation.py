@@ -77,7 +77,7 @@ class Butterfly(object):
     #Some cryptographic operation
     def w(self, blockOne, blockTwo, indexOne, indexTwo):
         print "this is a crypto operation "
-        
+
         #=======================================================================
         # cipher_machine = AES.new('This is a key123', AES.MODE_CBC, 'This is an IV456')
         #=======================================================================
@@ -90,7 +90,7 @@ class Butterfly(object):
         #=======================================================================
         
         interleaved  = "".join(i for j in zip(blockOne,blockTwo) for i in j)
-        
+         
         new_block_one, new_block_two = interleaved[:len(interleaved)/2], interleaved[len(interleaved)/2:]
         self.butterflyTab[indexOne] = new_block_two
         self.butterflyTab[indexTwo] = new_block_one
