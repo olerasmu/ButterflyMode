@@ -42,7 +42,7 @@ class Butterfly(object):
             byte = newfile.read(16)
             while byte:
                 self.fileTab.append(byte)
-               # print byte
+              # print byte
                 byte = newfile.read(16)
             print "File has been divided into blocks"
     
