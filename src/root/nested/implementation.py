@@ -5,6 +5,7 @@ Created on 18. mars 2014
 '''
 
 import math
+import base64
 from Crypto.Cipher import AES
 
 
@@ -41,9 +42,20 @@ class Butterfly(object):
                 byte = newfile.read(16)
             #print ("File has been divided into blocks")
     
-    def fileifyBlocks(self):
-        with open('bf_hourglass.txt', 'a') as hourglass_file:
-            for byte in self.butterflyTab:
+    fileTabTest = []
+    def blockifyFileTwo(self, filepath):
+        with open(filepath, 'r') as newfile:
+            byte = newfile.read(16)
+            while byte:
+                self.fileTabTest.append(byte)
+                print byte
+                byte = newfile.read(16)
+            #print ("File has been divided into blocks")
+        return self.fileTabTest
+    
+    def fileifyBlocks(self, filepath, butterflyTab):
+        with open(filepath, 'a') as hourglass_file:
+            for byte in butterflyTab:
                 hourglass_file.write(byte)
     
     #Initialize the butterfly function. Variable j is controlled from here
@@ -84,13 +96,13 @@ class Butterfly(object):
                 # print temp
                 #===============================================================
         #print ("count: ", self.count)
-        print (self.butterflyTab)
+        #print (self.butterflyTab)
     
     #Some cryptographic operation
     def w(self, blockOne, blockTwo, indexOne, indexTwo):
         #print ("this is a crypto operation ")
 
-        cipher_machine = AES.new('This is a key123', AES.MODE_ECB)
+        cipher_machine = AES.new(b'This is a key123', AES.MODE_ECB)
         
         #print (len(blockOne))
         
@@ -110,18 +122,40 @@ class Butterfly(object):
               
         new_block_one, new_block_two = interleaved[:int(len(interleaved)/2)], interleaved[int(len(interleaved)/2):]
            
-        print (new_block_one)
-           
+        
+        #=======================================================================
+        # pad = lambda s: s + (16 - len(s) % 16) * '{'
+        # EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
+        # DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip('{')
+        # 
+        # enc_new_block_one = EncodeAES(cipher_machine, new_block_one)
+        # enc_new_block_two = EncodeAES(cipher_machine, new_block_two)
+        #=======================================================================
+       
+        #print "original: ", new_block_one
+       
         new_block_one = cipher_machine.encrypt(new_block_one)
         new_block_two = cipher_machine.encrypt(new_block_two)
+        
+        #print "encrypted: ", new_block_one            
+       
+        #=======================================================================
+        # dec_new_block_one = DecodeAES(cipher_machine, enc_new_block_one)
+        #=======================================================================
           
-        print (new_block_one)
+        #=======================================================================
+        # print "original: ", new_block_one
+        # print "encrypted: ", enc_new_block_one
+        # print "decrypted: ", dec_new_block_one
+        #=======================================================================
           
         self.butterflyTab[indexOne] = new_block_two
         self.butterflyTab[indexTwo] = new_block_one
            
-        temp = cipher_machine.decrypt(new_block_one)
-        print "This is decrypted: ", temp
+        #=======================================================================
+        # temp = cipher_machine.decrypt(new_block_one)
+        # print "This is decrypted: ", temp
+        #=======================================================================
         
         
         
@@ -159,12 +193,16 @@ bf.initiateButterfly(d, n)
 #bf.w(temp, 'b')
 
 #Uncomment this to write the bf table to file.
-bf.fileifyBlocks()
+bf.fileifyBlocks('bf_hourglass.txt', bf.butterflyTab)
+
+
 
 print (bf.fileTab)
-print (bf.butterflyTab)
+print bf.butterflyTab
 print len(bf.butterflyTab)
 print (bf.count)
+
+print bf.blockifyFileTwo('bf_hourglass.txt')
 
 #===============================================================================
 # for byte in bf.butterflyTab:
