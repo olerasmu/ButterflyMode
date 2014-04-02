@@ -5,7 +5,7 @@ Created on 18. mars 2014
 '''
 
 import math
-import base64
+import os
 from Crypto.Cipher import AES
 
 
@@ -29,12 +29,11 @@ class Butterfly(object):
         size = tempFile.tell()
         tempFile.seek(0,0)
         tempFile.close()
-        print (size)
         return size
     
     #Slit the file into blocks of 128 bit (16*8 bytes)    
     def blockifyFile(self):
-        with open(self.filepath, 'r') as newfile:
+        with open(self.filepath, 'rb') as newfile:
             byte = newfile.read(16)
             while byte:
                 self.fileTab.append(byte)
@@ -44,7 +43,7 @@ class Butterfly(object):
     
     fileTabTest = []
     def blockifyFileTwo(self, filepath):
-        with open(filepath, 'r') as newfile:
+        with open(filepath, 'rb') as newfile:
             byte = newfile.read(16)
             while byte:
                 self.fileTabTest.append(byte)
@@ -53,8 +52,9 @@ class Butterfly(object):
             #print ("File has been divided into blocks")
         return self.fileTabTest
     
+    
     def fileifyBlocks(self, filepath, butterflyTab):
-        with open(filepath, 'a') as hourglass_file:
+        with open(filepath, 'ab') as hourglass_file:
             for byte in butterflyTab:
                 hourglass_file.write(byte)
     
@@ -119,7 +119,7 @@ class Butterfly(object):
         
         #Comment this to deactivate interleaving and encryption
         interleaved  = "".join(str(i) for j in zip(blockOne,blockTwo) for i in j)
-              
+        print (interleaved)
         new_block_one, new_block_two = interleaved[:int(len(interleaved)/2)], interleaved[int(len(interleaved)/2):]
            
         
@@ -134,14 +134,19 @@ class Butterfly(object):
        
         #print "original: ", new_block_one
        
+        print "This is original block one: ", blockOne
+        
         new_block_one = cipher_machine.encrypt(new_block_one)
         new_block_two = cipher_machine.encrypt(new_block_two)
+        
+        print "This is block one encrypted: ", new_block_one
         
         #print "encrypted: ", new_block_one            
        
         #=======================================================================
         # dec_new_block_one = DecodeAES(cipher_machine, enc_new_block_one)
         #=======================================================================
+          
           
         #=======================================================================
         # print "original: ", new_block_one
@@ -152,11 +157,8 @@ class Butterfly(object):
         self.butterflyTab[indexOne] = new_block_two
         self.butterflyTab[indexTwo] = new_block_one
            
-        #=======================================================================
-        # temp = cipher_machine.decrypt(new_block_one)
-        # print "This is decrypted: ", temp
-        #=======================================================================
-        
+        temp = cipher_machine.decrypt(new_block_one)
+        print "This is block one decrypted: ", temp
         
         
         
@@ -172,7 +174,7 @@ class Butterfly(object):
     
 
 bf = Butterfly(filepath="butterflyfile.txt")
-
+print os.path.getsize(bf.filepath)
 #bf.testOpen()
 
 bf.blockifyFile()
@@ -202,7 +204,7 @@ print bf.butterflyTab
 print len(bf.butterflyTab)
 print (bf.count)
 
-print bf.blockifyFileTwo('bf_hourglass.txt')
+#print bf.blockifyFileTwo('bf_hourglass.txt')
 
 #===============================================================================
 # for byte in bf.butterflyTab:
