@@ -6,6 +6,8 @@ Created on 18. mars 2014
 
 import math
 import os
+import timeit
+import sys
 from Crypto.Cipher import AES
 
 
@@ -17,7 +19,7 @@ class Butterfly(object):
     def __init__(self, filepath=None):
         self.filepath = filepath
         #self.f = open(filepath, 'rb')
-        print (filepath)
+        #print (filepath)
         
     fileTab = []
     butterflyTab = []
@@ -47,7 +49,7 @@ class Butterfly(object):
             byte = newfile.read(16)
             while byte:
                 self.fileTabTest.append(byte)
-                print byte
+                #print byte
                 byte = newfile.read(16)
             #print ("File has been divided into blocks")
         return self.fileTabTest
@@ -66,7 +68,7 @@ class Butterfly(object):
             #print "this is j: ", j
             self.executeButterfly(j, n)
     
-    count = 0
+    #count = 0
     #Execute the butterfly algorithm
     def executeButterfly(self, j, n):
         #print ("execute")
@@ -77,7 +79,7 @@ class Butterfly(object):
                 for i in range(1, int(math.pow(2, j-1))+1):
                     indexOne = int(i+k*math.pow(2, j))-1
                     indexTwo = int(i+k*math.pow(2, j)+math.pow(2, j-1))-1
-                    self.count += 1
+                    #self.count += 1
                     self.w(self.fileTab[indexOne], self.fileTab[indexTwo], indexOne, indexTwo)
                     
                     #print indexOne, " ", indexTwo
@@ -85,7 +87,7 @@ class Butterfly(object):
                 for i in range(1, int(math.pow(2, j-1))+1):
                     indexOne = int(i+k*math.pow(2, j))-1
                     indexTwo = int(i+k*math.pow(2, j)+math.pow(2, j-1))-1
-                    self.count += 1
+                    #self.count += 1
                     self.w(self.butterflyTab[indexOne], self.butterflyTab[indexTwo], indexOne, indexTwo)
                     
                     #print indexOne, " ", indexTwo
@@ -98,11 +100,12 @@ class Butterfly(object):
         #print ("count: ", self.count)
         #print (self.butterflyTab)
     
+    cipher_machine = AES.new(b'This is a key123', AES.MODE_ECB)
     #Some cryptographic operation
-    def w(self, blockOne, blockTwo, indexOne, indexTwo):
+    def w(self, block_one, block_two, indexOne, indexTwo):
         #print ("this is a crypto operation ")
 
-        cipher_machine = AES.new(b'This is a key123', AES.MODE_ECB)
+        
         
         #print (len(blockOne))
         
@@ -110,36 +113,43 @@ class Butterfly(object):
         # #Uncomment this to deactivate interleaving and encryption 
         # print ("one ", indexOne, " two: ", indexTwo) 
         # print ("Before: ", self.butterflyTab[indexOne], " ", self.butterflyTab[indexTwo]) 
-        # self.butterflyTab[indexOne] = blockTwo
-        # self.butterflyTab[indexTwo] = blockOne
+        #=======================================================================
+        
+        #=======================================================================
+        # self.butterflyTab[indexOne] = block_two
+        # self.butterflyTab[indexTwo] = block_one
         #=======================================================================
          
          
         #print ("After: ", self.butterflyTab[indexOne], " ", self.butterflyTab[indexTwo])
         
-        #Comment this to deactivate interleaving and encryption
-        interleaved  = "".join(str(i) for j in zip(blockOne,blockTwo) for i in j)
-        print (interleaved)
-        new_block_one, new_block_two = interleaved[:int(len(interleaved)/2)], interleaved[int(len(interleaved)/2):]
-           
+        #=======================================================================
+        # #Comment this to deactivate interleaving and encryption
+        # interleaved  = "".join(str(i) for j in zip(block_one, block_two) for i in j)
+        # new_block_one, new_block_two = interleaved[:int(len(interleaved)/2)], interleaved[int(len(interleaved)/2):]
+        #=======================================================================
+       
+        interleaved = ''
+        for i in range(0, len(block_one)):
+            interleaved = interleaved + block_one[i] + block_two[i]
+         
+         
+        new_block_one = interleaved[:int(len(interleaved)/2)]
+        new_block_two = interleaved[int(len(interleaved)/2):]
         
-        #=======================================================================
-        # pad = lambda s: s + (16 - len(s) % 16) * '{'
-        # EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
-        # DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip('{')
-        # 
-        # enc_new_block_one = EncodeAES(cipher_machine, new_block_one)
-        # enc_new_block_two = EncodeAES(cipher_machine, new_block_two)
-        #=======================================================================
+        #print (interleaved)
+        
+        
        
         #print "original: ", new_block_one
        
-        print "This is original block one: ", blockOne
+        #print "This is original block one: ", blockOne
         
-        new_block_one = cipher_machine.encrypt(new_block_one)
-        new_block_two = cipher_machine.encrypt(new_block_two)
+        #Comment out this to deactivate encryption
+        new_block_one = self.cipher_machine.encrypt(new_block_one)
+        new_block_two = self.cipher_machine.encrypt(new_block_two)
         
-        print "This is block one encrypted: ", new_block_one
+        #print "This is block one encrypted: ", new_block_one
         
         #print "encrypted: ", new_block_one            
        
@@ -157,8 +167,8 @@ class Butterfly(object):
         self.butterflyTab[indexOne] = new_block_two
         self.butterflyTab[indexTwo] = new_block_one
            
-        temp = cipher_machine.decrypt(new_block_one)
-        print "This is block one decrypted: ", temp
+        #temp = cipher_machine.decrypt(new_block_one)
+        #print "This is block one decrypted: ", temp
         
         
         
@@ -173,36 +183,62 @@ class Butterfly(object):
             
     
 
-bf = Butterfly(filepath="butterflyfile.txt")
-print os.path.getsize(bf.filepath)
-#bf.testOpen()
-
-bf.blockifyFile()
-n = int(bf.fileSize()/16)
-#print (int(math.pow(2, 1-1)))
-#print (n) 
-d = int(math.log(n, 2))
-bf.initiateButterfly(d, n)
-#print ("This is d: ", d)
- 
-#===============================================================================
-# print (len(bf.butterflyTab))
-# print (len(bf.fileTab))
-#===============================================================================
-
-#Try to xor the blocks together 
-#temp = bf.w('a', 'b')
-#bf.w(temp, 'b')
-
-#Uncomment this to write the bf table to file.
-bf.fileifyBlocks('bf_hourglass.txt', bf.butterflyTab)
 
 
+    def start(self, input_filepath):
+        bf = Butterfly(filepath=input_filepath)
+        #print os.path.getsize(bf.filepath)
+        #bf.testOpen()
+        
+        start = timeit.default_timer()
+        bf.blockifyFile()
+        n = len(bf.fileTab)
+        #n = int(bf.fileSize()/16)
+        #print (int(math.pow(2, 1-1)))
+        #print (n) 
+        d = int(math.log(n, 2))
+        bf.initiateButterfly(d, n)
+        #print ("This is d: ", d)
+         
+        #===============================================================================
+        # print (len(bf.butterflyTab))
+        # print (len(bf.fileTab))
+        #===============================================================================
+        
+        #Try to xor the blocks together 
+        #temp = bf.w('a', 'b')
+        #bf.w(temp, 'b')
+        
+        #Uncomment this to write the bf table to file.
+        bf.fileifyBlocks('bf_hourglass.txt', bf.butterflyTab)
+        
+        stop = timeit.default_timer()
+        
+        print "Start: ", start, "\nStop: ", stop, "\nTime: ", stop - start
 
-print (bf.fileTab)
-print bf.butterflyTab
-print len(bf.butterflyTab)
-print (bf.count)
+    def input(self, input_filepath):
+        try_again = ''
+        if os.path.isfile(input_filepath):
+            bf.filepath = input_filepath
+            bf.start(input_filepath)
+        elif not os.path.isfile(input_filepath):
+            try_again = raw_input("Provided filepath did not exist, try again or write quit to exit...")
+            if try_again == 'quit':
+                sys.exit('You choose to quit')
+            else:
+                self.input(try_again)
+        
+bf = Butterfly()
+
+input_filepath = raw_input("Provide filepath...")
+
+bf.input(input_filepath)
+
+
+#print (bf.fileTab)
+#print bf.butterflyTab
+#print len(bf.butterflyTab)
+#print (bf.count)
 
 #print bf.blockifyFileTwo('bf_hourglass.txt')
 
@@ -210,4 +246,3 @@ print (bf.count)
 # for byte in bf.butterflyTab:
 #     print byte, " byte"
 #===============================================================================
-
