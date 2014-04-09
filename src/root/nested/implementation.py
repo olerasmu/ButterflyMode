@@ -38,17 +38,20 @@ class Butterfly(object):
             byte = newfile.read(16)
             while byte:
                 self.fileTab.append(byte)
-                # print byte
+                #print (byte)
                 byte = newfile.read(16)
             #print ("File has been divided into blocks")
-    
+        
+        print (self.fileTab)
+        
+        
     fileTabTest = []
     def blockifyFileTwo(self, filepath):
         with open(filepath, 'r') as newfile:
             byte = newfile.read(16)
             while byte:
                 self.fileTabTest.append(byte)
-                print byte
+                print (byte)
                 byte = newfile.read(16)
             #print ("File has been divided into blocks")
         return self.fileTabTest
@@ -98,12 +101,14 @@ class Butterfly(object):
         #print ("count: ", self.count)
         #print (self.butterflyTab)
     
+    count2 = 0
     #Some cryptographic operation
     def w(self, blockOne, blockTwo, indexOne, indexTwo):
         #print ("this is a crypto operation ")
-
         cipher_machine = AES.new(b'This is a key123', AES.MODE_ECB)
+        self.count2 += 1
         
+        print (self.count2)
         #print (len(blockOne))
         
         #=======================================================================
@@ -121,7 +126,11 @@ class Butterfly(object):
         interleaved  = "".join(str(i) for j in zip(blockOne,blockTwo) for i in j)
               
         new_block_one, new_block_two = interleaved[:int(len(interleaved)/2)], interleaved[int(len(interleaved)/2):]
-           
+        
+        if (len(new_block_one) != 16 or len(new_block_two) != 16):
+            print ("her")
+        print (new_block_one)
+        print (new_block_two)   
         
         #=======================================================================
         # pad = lambda s: s + (16 - len(s) % 16) * '{'
@@ -137,7 +146,8 @@ class Butterfly(object):
         new_block_one = cipher_machine.encrypt(new_block_one)
         new_block_two = cipher_machine.encrypt(new_block_two)
         
-        #print "encrypted: ", new_block_one            
+        print (new_block_one)
+        print (new_block_two)            
        
         #=======================================================================
         # dec_new_block_one = DecodeAES(cipher_machine, enc_new_block_one)
@@ -176,13 +186,17 @@ bf = Butterfly(filepath="butterflyfile.txt")
 #bf.testOpen()
 
 bf.blockifyFile()
+print (bf.fileTab)
+for block in bf.fileTab:
+    if len(block) != 16:
+        print ("korr")
+print (len(bf.fileTab))
 n = int(bf.fileSize()/16)
 #print (int(math.pow(2, 1-1)))
 #print (n) 
 d = int(math.log(n, 2))
-bf.initiateButterfly(d, n)
+bf.initiateButterfly(1, n)
 #print ("This is d: ", d)
- 
 #===============================================================================
 # print (len(bf.butterflyTab))
 # print (len(bf.fileTab))
@@ -193,16 +207,16 @@ bf.initiateButterfly(d, n)
 #bf.w(temp, 'b')
 
 #Uncomment this to write the bf table to file.
-bf.fileifyBlocks('bf_hourglass.txt', bf.butterflyTab)
+#bf.fileifyBlocks('bf_hourglass.txt', bf.butterflyTab)
 
 
 
 print (bf.fileTab)
-print bf.butterflyTab
-print len(bf.butterflyTab)
+print (bf.butterflyTab)
+print (len(bf.butterflyTab))
 print (bf.count)
 
-print bf.blockifyFileTwo('bf_hourglass.txt')
+#print (bf.blockifyFileTwo('bf_hourglass.txt'))
 
 #===============================================================================
 # for byte in bf.butterflyTab:
