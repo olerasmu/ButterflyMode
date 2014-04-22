@@ -9,6 +9,7 @@ import os
 import timeit
 import sys
 from Crypto.Cipher import AES
+from _hashlib import new
 
 
 #===============================================================================
@@ -26,7 +27,7 @@ class Butterfly(object):
     
     #Return the size of file in bytes
     def fileSize(self):
-        tempFile = open(self.filepath, 'rb')
+        tempFile = open(self.filepath, 'r')
         tempFile.seek(0,2)
         size = tempFile.tell()
         tempFile.seek(0,0)
@@ -108,11 +109,6 @@ class Butterfly(object):
     cipher_machine = AES.new(b'This is a key123', AES.MODE_ECB)
     #Some cryptographic operation
     def w(self, block_one, block_two, indexOne, indexTwo):
-        #print ("this is a crypto operation ")
-
-        
-        print (self.count2)
-        #print (len(blockOne))
         
         #=======================================================================
         # #Uncomment this to deactivate interleaving and encryption 
@@ -124,56 +120,40 @@ class Butterfly(object):
         # self.butterflyTab[indexOne] = block_two
         # self.butterflyTab[indexTwo] = block_one
         #=======================================================================
-         
-         
-        #print ("After: ", self.butterflyTab[indexOne], " ", self.butterflyTab[indexTwo])
         
         #=======================================================================
         # #Comment this to deactivate interleaving and encryption
         # interleaved  = "".join(str(i) for j in zip(block_one, block_two) for i in j)
         # new_block_one, new_block_two = interleaved[:int(len(interleaved)/2)], interleaved[int(len(interleaved)/2):]
         #=======================================================================
-       
-        interleaved = ''
-        for i in range(0, len(block_one)):
-            interleaved = interleaved + block_one[i] + block_two[i]
-         
-         
-        new_block_one = interleaved[:int(len(interleaved)/2)]
-        new_block_two = interleaved[int(len(interleaved)/2):]
         
-        #print (interleaved)
-        
-        
+        #=======================================================================
+        # #This part is for interleaving of blocks
+        # # #print block_one, block_two, len(block_one), len(block_two)
+        # interleaved = ''
+        # for i in range(0, len(block_one)):
+        #     interleaved = interleaved + str(block_one[i]) + str(block_two[i])
+        # #print interleaved, len(interleaved)
+        #   
+        # new_block_one = interleaved[:int(len(interleaved)/2)]
+        # new_block_two = interleaved[int(len(interleaved)/2):]
+        #=======================================================================
        
-        #print "original: ", new_block_one
-       
-        #print "This is original block one: ", blockOne
+        
+        #This part is for splitting and combining blocks (alternative to interleaving)
+        new_block_one = block_one[len(block_one)/2:] + block_two[len(block_two)/2:]
+        new_block_two = block_one[:len(block_one)/2] + block_two[:len(block_two)/2]
         
         #Comment out this to deactivate encryption
+        #print new_block_one, new_block_two, "rett for crypto, og lengden er:", len(new_block_one), len(new_block_two)
         new_block_one = self.cipher_machine.encrypt(new_block_one)
         new_block_two = self.cipher_machine.encrypt(new_block_two)
-        
+        #print new_block_one, "rett etter crypto, og lengden er:", len(new_block_one)
         #print "This is block one encrypted: ", new_block_one
-                  
-       
-        #=======================================================================
-        # dec_new_block_one = DecodeAES(cipher_machine, enc_new_block_one)
-        #=======================================================================
-          
-          
-        #=======================================================================
-        # print "original: ", new_block_one
-        # print "encrypted: ", enc_new_block_one
-        # print "decrypted: ", dec_new_block_one
-        #=======================================================================
           
         self.butterflyTab[indexOne] = new_block_two
         self.butterflyTab[indexTwo] = new_block_one
            
-        #temp = cipher_machine.decrypt(new_block_one)
-        #print "This is block one decrypted: ", temp
-        
         
         
     #===========================================================================
@@ -219,7 +199,13 @@ class Butterfly(object):
         
         stop = timeit.default_timer()
         
-        print "Start: ", start, "\nStop: ", stop, "\nTime: ", stop - start
+        print ("Start: ", start, "\nStop: ", stop, "\nTime: ", stop - start)
+        
+        
+        writeable = "File: " + str(self.filepath) + " size: " + str(self.fileSize()) + " time: ", str(stop-start)
+        writeable = str(writeable)+"\n"
+        with open('resultfile.txt', 'a') as resultfile:
+            resultfile.write(writeable)
 
     def input(self, input_filepath):
         try_again = ''

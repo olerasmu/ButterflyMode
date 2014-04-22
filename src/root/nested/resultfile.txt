@@ -1,0 +1,1 @@
+('File: C:\\Users\\Ole\\Documents\\Skole\\Master\\workspace\\ButterflyMode\\src\\root\\nested\\butterflyfile.txt size: 4096 time: ', '0.0827703421191')
